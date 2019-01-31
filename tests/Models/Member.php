@@ -11,6 +11,12 @@ namespace W7\Laravel\CacheModel\Tests\Models;
 
 use W7\Laravel\CacheModel\Model;
 
+/**
+ * Class Member
+ * @package W7\Laravel\CacheModel\Tests\Models
+ *
+ * @property string $invite_code
+ */
 class Member extends Model
 {
 	public $timestamps = false;

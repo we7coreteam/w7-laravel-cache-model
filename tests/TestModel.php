@@ -118,6 +118,9 @@ class TestModel extends TestCase
 	{
 		$uid = 1;
 		
+		/**
+		 * @var $user Member
+		 */
 		$user = Member::query()->find($uid);
 		$this->assertTrue(!empty($user));
 		$this->assertTrue(Member::cacheHasKey($uid));
@@ -262,9 +265,6 @@ class TestModel extends TestCase
 		// Member::cacheFlushAll();
 		$uid  = 1;
 		$user = Member::query()->with(['apps'])->find($uid);
-		$user->apps()->cache(10);
-		$user->cache()->with('app');
-		jd($user);
 	}
 	
 	public function testFlush()
@@ -281,17 +281,17 @@ class TestModel extends TestCase
 	
 	public function testFlushAll()
 	{
-		$user        = Member::query()->find(1);
-		$memberCount = MemberCount::query()->find(1);
+		Member::query()->find(1);
+		MemberCount::query()->find(1);
 		
 		MemberCount::cacheFlushAll();
 		
 		echo 'select query twice', PHP_EOL;
 		
-		$user        = Member::query()->find(1);
-		$memberCount = MemberCount::query()->find(1);
+		Member::query()->find(1);
+		MemberCount::query()->find(1);
 		
-		$user        = Member::query()->find(1);
-		$memberCount = MemberCount::query()->find(1);
+		Member::query()->find(1);
+		MemberCount::query()->find(1);
 	}
 }
