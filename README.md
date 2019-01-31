@@ -1,7 +1,7 @@
-# w7-laravel-cache-model
+# w7Laravel
 
 #### 介绍
-Laravel/Model find、findMany 支持缓存
+laravel 框架的扩展
 
 #### 软件架构
 软件架构说明
