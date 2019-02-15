@@ -23,6 +23,11 @@ abstract class Model extends BaseModel
 	 */
 	protected $useCache = true;
 	
+	public function simpleTag()
+	{
+		return new SimpleTag($this->getConnectionName() ?? 'default', $this->table);
+	}
+	
 	/**
 	 * @return bool
 	 */
@@ -62,7 +67,7 @@ abstract class Model extends BaseModel
 	 */
 	public static function cacheDeleteModel($key)
 	{
-		static::cacheResolver()->del($key);
+		static::cacheResolver()->delModel($key);
 	}
 	
 	/**
@@ -104,19 +109,29 @@ abstract class Model extends BaseModel
 	}
 	
 	/**
-	 * @return Cache
+	 * @return SimpleCache
 	 */
 	public static function cacheResolver()
 	{
 		static $cacheResolver;
 		if (empty($cacheResolver)) {
-			$cacheResolver = new Cache(new static);
+			$tag = (new static())->simpleTag();
+			
+			$cacheResolver = new SimpleCache();
+			$cacheResolver->setSimpleTag($tag);
 		}
 		return $cacheResolver;
 	}
 	
+	private static $cacheInterface;
+	
+	public static function setCacheInterface($cacheInterface)
+	{
+		self::$cacheInterface = $cacheInterface;
+	}
+	
 	/**
-	 * @return Cache
+	 * @return SimpleCache
 	 */
 	public function getCacheResolver()
 	{

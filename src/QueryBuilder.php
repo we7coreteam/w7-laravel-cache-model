@@ -9,6 +9,7 @@
 namespace W7\Laravel\CacheModel;
 
 use Illuminate\Database\Query\Builder as DatabaseQueryBuilder;
+use Psr\SimpleCache\CacheInterface;
 
 class QueryBuilder extends DatabaseQueryBuilder
 {
@@ -42,7 +43,7 @@ class QueryBuilder extends DatabaseQueryBuilder
 	}
 	
 	/**
-	 * @return Cache
+	 * @return SimpleCache
 	 */
 	public function getCacheResolver()
 	{
@@ -161,8 +162,11 @@ class QueryBuilder extends DatabaseQueryBuilder
 			$ids = $this->getFindQueryPrimaryKeyValues();
 			
 			try {
+				
+//				ll('aaaaaaaa', $this->getCacheResolver()->hasModelKey(1));
+				
 				$ids->each(function ($id) {
-					if (!$this->getCacheResolver()->has($id)) {
+					if (!$this->getCacheResolver()->hasModelKey($id)) {
 						throw new CacheKeyNotExistsException('cache missing');
 					}
 				});
