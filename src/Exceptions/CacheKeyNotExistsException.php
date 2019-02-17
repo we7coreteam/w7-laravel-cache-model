@@ -6,7 +6,7 @@
  * Time: 16:50
  */
 
-namespace W7\Laravel\CacheModel;
+namespace W7\Laravel\CacheModel\Exceptions;
 
 use Exception;
 

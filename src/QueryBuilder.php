@@ -9,7 +9,7 @@
 namespace W7\Laravel\CacheModel;
 
 use Illuminate\Database\Query\Builder as DatabaseQueryBuilder;
-use Psr\SimpleCache\CacheInterface;
+use W7\Laravel\CacheModel\Exceptions\CacheKeyNotExistsException;
 
 class QueryBuilder extends DatabaseQueryBuilder
 {
@@ -43,24 +43,43 @@ class QueryBuilder extends DatabaseQueryBuilder
 	}
 	
 	/**
-	 * @return SimpleCache
+	 * @return Cache
+	 * @throws InvalidArgumentException
 	 */
 	public function getCacheResolver()
 	{
 		return $this->getCacheModel()->getCacheResolver();
 	}
 	
+	/**
+	 * @param array $values
+	 * @param null  $sequence
+	 * @return int|void
+	 * @throws InvalidArgumentException
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
+	 */
 	public function insertGetId(array $values, $sequence = null)
 	{
 		try {
 			$id = parent::insertGetId($values, $sequence);
+			
+			ll('insertGetId', $id);
+			
 		} finally {
 			if ($this->needCache() && !empty($id)) {
 				$this->getCacheResolver()->delModel($id);
+				
+				ll('insert del model' . $this->getCacheModel()->getTable() . ' ' . $id);
 			}
 		}
 	}
 	
+	/**
+	 * @param null $id
+	 * @return int
+	 * @throws InvalidArgumentException
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
+	 */
 	public function delete($id = null)
 	{
 		try {
@@ -68,10 +87,18 @@ class QueryBuilder extends DatabaseQueryBuilder
 		} finally {
 			if ($this->getCacheModel()->exists && $this->needCache()) {
 				$this->getCacheResolver()->delModel($this->getCacheModel()->getKey());
+				
+				ll('delete del model ' . $this->getCacheModel()->getTable() . ' ' . $this->cacheModel->getKey());
 			}
 		}
 	}
 	
+	/**
+	 * @param array $values
+	 * @return int
+	 * @throws InvalidArgumentException
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
+	 */
 	public function update(array $values)
 	{
 		try {
@@ -79,6 +106,8 @@ class QueryBuilder extends DatabaseQueryBuilder
 		} finally {
 			if ($this->getCacheModel()->exists && $this->needCache()) {
 				$this->getCacheResolver()->delModel($this->cacheModel->getKey());
+				
+				ll('update ' . $this->getCacheModel()->getTable() . ' ' . $this->cacheModel->getKey());
 			}
 		}
 	}
@@ -153,6 +182,7 @@ class QueryBuilder extends DatabaseQueryBuilder
 	
 	/**
 	 * @return array
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	protected function runSelect()
 	{
@@ -162,11 +192,8 @@ class QueryBuilder extends DatabaseQueryBuilder
 			$ids = $this->getFindQueryPrimaryKeyValues();
 			
 			try {
-				
-//				ll('aaaaaaaa', $this->getCacheResolver()->hasModelKey(1));
-				
 				$ids->each(function ($id) {
-					if (!$this->getCacheResolver()->hasModelKey($id)) {
+					if (!$this->getCacheResolver()->has($id)) {
 						throw new CacheKeyNotExistsException('cache missing');
 					}
 				});
@@ -197,12 +224,13 @@ class QueryBuilder extends DatabaseQueryBuilder
 			foreach ($rows as $row) {
 				$this->getCacheResolver()->setModel($row->{$primaryKey}, $row);
 			}
-			
-			$ids->each(function ($id) {
-				if (!$this->getCacheResolver()->has($id)) {
-					$this->getCacheResolver()->setModel($id, null); // 防止缓存击穿
-				}
-			});
+			if (!empty($ids)) {
+				$ids->each(function ($id) {
+					if (!$this->getCacheResolver()->has($id)) {
+						$this->getCacheResolver()->setModel($id, null); // 防止缓存击穿
+					}
+				});
+			}
 		}
 		
 		return $rows;

@@ -15,13 +15,19 @@ use W7\Laravel\CacheModel\Model;
  * Class Member
  * @package W7\Laravel\CacheModel\Tests\Models
  *
+ * @property int    $uid
  * @property string $invite_code
+ * @property string $salt
+ * @property string $username
+ * @property string $password
  */
 class Member extends Model
 {
 	public $timestamps = false;
 	
-	protected $table = 'members';
+	protected $connection = 'prox';
+	
+	protected $table = 'mc_members';
 	
 	protected $primaryKey = 'uid';
 	
@@ -33,8 +39,12 @@ class Member extends Model
 		'uid',
 		'username',
 		'password',
-		'salt',
-		'encrypt',
+		//		'salt',
+		//		'encrypt',
+	];
+	
+	protected $visible = [
+		'uid', 'mobile', 'password', 'salt',
 	];
 	
 	public function memberCount()

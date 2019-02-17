@@ -9,8 +9,7 @@
 namespace W7\Laravel\CacheModel;
 
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Cache as CacheFacade;
+use W7\Laravel\CacheModel\Exceptions\InvalidArgumentException;
 
 /**
  * Class Cache
@@ -18,68 +17,115 @@ use Illuminate\Support\Facades\Cache as CacheFacade;
  */
 class Cache
 {
-	/**
-	 * @var ModelMeta
-	 */
-	private $meta;
+	public const NULL = 'nil&null';
 	
 	/**
-	 * CacheRedis constructor.
-	 * @param Model $model
+	 * @var CacheResolver
 	 */
-	public function __construct(Model $model)
+	private $cache;
+	
+	/**
+	 * @var Tag
+	 */
+	private $tag;
+	
+	/**
+	 * Cache constructor.
+	 * @throws InvalidArgumentException
+	 */
+	public function __construct()
 	{
-		$this->meta = new ModelMeta($model);
+		$this->cache = new CacheResolver();
 	}
 	
+	/**
+	 * @param Tag $tag
+	 * @return Cache
+	 */
+	public function tags($tag)
+	{
+		$this->tag = $tag;
+		
+		return $this;
+	}
+	
+	/**
+	 * @param $key
+	 * @return string
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
+	 */
+	private function cacheKey($key)
+	{
+		return $this->tag->getCacheKey($key);
+	}
+	
+	/**
+	 * @param $key
+	 * @param $model
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
+	 */
 	public function set($key, $model)
 	{
-		CacheFacade::tags($this->meta->dbTag(), $this->meta->tableTag())->forever($key, $model);
+		$this->cache->set($this->cacheKey($key), $model);
 	}
 	
+	/**
+	 * @param $key
+	 * @return mixed
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
+	 */
 	public function get($key)
 	{
-		return CacheFacade::tags($this->meta->dbTag(), $this->meta->tableTag())->get($key);
+		return $this->cache->get($this->cacheKey($key));
 	}
 	
 	/**
 	 * 没有模型也可能有缓存，防止缓存击穿
 	 * @param $key
 	 * @return bool
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public function has($key)
 	{
-		return CacheFacade::tags($this->meta->dbTag(), $this->meta->tableTag())->has($key);
+		return $this->cache->has($this->cacheKey($key));
 	}
 	
+	/**
+	 * @param $key
+	 * @return bool
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
+	 */
 	public function del($key)
 	{
-		CacheFacade::tags($this->meta->dbTag(), $this->meta->tableTag())->forget($key);
+		return $this->cache->delete($this->cacheKey($key));
 	}
 	
 	/**
 	 * 清空当前表的缓存
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public function flush()
 	{
-		CacheFacade::tags($this->meta->tableTag())->flush();
+		$this->tag->flush();
 	}
 	
 	/**
 	 * 清空当前表所在数据库的缓存
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public function flushAll()
 	{
-		CacheFacade::tags($this->meta->dbTag())->flush();
+		$this->tag->flushAll();
 	}
 	
 	/**
-	 * @param                $key
+	 * @param string         $key
 	 * @param \stdClass|null $model
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public function setModel($key, $model)
 	{
-		$model = $model ?? 'nil&null';
+		$model = $model ?? static::NULL;
 		
 		$this->set($key, $model);
 	}
@@ -88,11 +134,12 @@ class Cache
 	 * 获取缓存中键为 $key 的记录
 	 * @param $key
 	 * @return \stdClass|null
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public function getModel($key)
 	{
 		$model = $this->get($key);
-		if ($model === 'nil&null') {
+		if ($model === static::NULL) {
 			$model = null;
 		}
 		return $model;
@@ -100,21 +147,24 @@ class Cache
 	
 	/**
 	 * @param string $key
+	 * @return bool
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public function delModel($key)
 	{
-		$this->del($key);
+		return $this->cache->delete($this->cacheKey($key));
 	}
 	
 	/**
 	 * 缓存中是否存在主键为 key 的记录
 	 * @param $key
 	 * @return bool
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public function hasModel($key)
 	{
 		$model = $this->getModel($key);
 		
-		return isset($model);
+		return !empty($model);
 	}
 }

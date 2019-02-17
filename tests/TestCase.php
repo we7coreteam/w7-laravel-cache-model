@@ -114,6 +114,28 @@ class TestCase extends \PHPUnit\Framework\TestCase
 		
 		$manager->addConnection([
 			'driver'    => 'mysql',
+			'host'      => 'localhost',
+			'database'  => 'we7_prox',
+			'username'  => 'root',
+			'password'  => 'root',
+			'charset'   => 'utf8',
+			'collation' => 'utf8_unicode_ci',
+			'prefix'    => 'ims_',
+		], 'local');
+		
+		$manager->addConnection([
+			'driver'    => 'mysql',
+			'host'      => 'localhost',
+			'database'  => 'we7_prox',
+			'username'  => 'root',
+			'password'  => 'root',
+			'charset'   => 'utf8',
+			'collation' => 'utf8_unicode_ci',
+			'prefix'    => 'ims_',
+		], 'prox');
+		
+		$manager->addConnection([
+			'driver'    => 'mysql',
 			'host'      => '172.16.1.13',
 			'database'  => 'we7_discuz_gbk',
 			'username'  => 'root',

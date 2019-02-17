@@ -10,6 +10,7 @@ namespace W7\Laravel\CacheModel;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model as BaseModel;
+use W7\Laravel\CacheModel\Exceptions\InvalidArgumentException;
 
 /**
  * Class Model
@@ -23,9 +24,13 @@ abstract class Model extends BaseModel
 	 */
 	protected $useCache = true;
 	
-	public function simpleTag()
+	/**
+	 * @return Tag
+	 * @throws InvalidArgumentException
+	 */
+	public function getCacheTag()
 	{
-		return new SimpleTag($this->getConnectionName() ?? 'default', $this->table);
+		return new Tag($this->getConnectionName(), $this->table);
 	}
 	
 	/**
@@ -47,6 +52,7 @@ abstract class Model extends BaseModel
 	
 	/**
 	 * 清空当前表所在数据库的所有缓存
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public static function cacheFlushAll()
 	{
@@ -55,6 +61,7 @@ abstract class Model extends BaseModel
 	
 	/**
 	 * 清空当前表的所有缓存
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public static function cacheFlush()
 	{
@@ -64,6 +71,7 @@ abstract class Model extends BaseModel
 	/**
 	 * 清空当前表指定键的缓存
 	 * @param $key
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public static function cacheDeleteModel($key)
 	{
@@ -74,6 +82,7 @@ abstract class Model extends BaseModel
 	 * 设置当前表主键缓存
 	 * @param $key
 	 * @param $value
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public static function cacheSetModel($key, $value)
 	{
@@ -83,6 +92,7 @@ abstract class Model extends BaseModel
 	/**
 	 * @param $key
 	 * @return bool
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public static function cacheHasModel($key)
 	{
@@ -91,7 +101,8 @@ abstract class Model extends BaseModel
 	
 	/**
 	 * @param $key
-	 * @return mixed|Model|Model
+	 * @return null|\stdClass
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public static function cacheGetModel($key)
 	{
@@ -102,6 +113,7 @@ abstract class Model extends BaseModel
 	 * 有缓存记录，未必是缓存对象
 	 * @param $key
 	 * @return bool
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public static function cacheHasKey($key)
 	{
@@ -109,33 +121,24 @@ abstract class Model extends BaseModel
 	}
 	
 	/**
-	 * @return SimpleCache
+	 * @return Cache
 	 */
 	public static function cacheResolver()
 	{
 		static $cacheResolver;
 		if (empty($cacheResolver)) {
-			$tag = (new static())->simpleTag();
-			
-			$cacheResolver = new SimpleCache();
-			$cacheResolver->setSimpleTag($tag);
+			$cacheResolver = (new static)->getCacheResolver();
 		}
 		return $cacheResolver;
 	}
 	
-	private static $cacheInterface;
-	
-	public static function setCacheInterface($cacheInterface)
-	{
-		self::$cacheInterface = $cacheInterface;
-	}
-	
 	/**
-	 * @return SimpleCache
+	 * @return Cache
+	 * @throws InvalidArgumentException
 	 */
 	public function getCacheResolver()
 	{
-		return static::cacheResolver();
+		return (new Cache())->tags($this->getCacheTag());
 	}
 	
 	/**
