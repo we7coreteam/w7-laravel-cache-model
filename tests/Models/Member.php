@@ -25,9 +25,7 @@ class Member extends Model
 {
 	public $timestamps = false;
 	
-	protected $connection = 'prox';
-	
-	protected $table = 'mc_members';
+	protected $table = 'members';
 	
 	protected $primaryKey = 'uid';
 	
@@ -39,13 +37,13 @@ class Member extends Model
 		'uid',
 		'username',
 		'password',
-		//		'salt',
-		//		'encrypt',
+		'salt',
+		'encrypt',
 	];
 	
-	protected $visible = [
-		'uid', 'mobile', 'password', 'salt',
-	];
+//	protected $visible = [
+//		'uid', 'mobile', 'password', 'salt',
+//	];
 	
 	public function memberCount()
 	{

@@ -10,7 +10,7 @@ namespace W7\Laravel\CacheModel;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model as BaseModel;
-use W7\Laravel\CacheModel\Exceptions\InvalidArgumentException;
+use W7\Laravel\CacheModel\Caches\Tag;
 
 /**
  * Class Model
@@ -25,23 +25,6 @@ abstract class Model extends BaseModel
 	protected $useCache = true;
 	
 	/**
-	 * @return Tag
-	 * @throws InvalidArgumentException
-	 */
-	public function getCacheTag()
-	{
-		return new Tag($this->getConnectionName(), $this->table);
-	}
-	
-	/**
-	 * @return bool
-	 */
-	public static function getDefaultNeedCache()
-	{
-		return (new static())->needCache();
-	}
-	
-	/**
 	 * 是否启用缓存
 	 * @return bool
 	 */
@@ -50,95 +33,14 @@ abstract class Model extends BaseModel
 		return $this->useCache;
 	}
 	
-	/**
-	 * 清空当前表所在数据库的所有缓存
-	 * @throws \Psr\SimpleCache\InvalidArgumentException
-	 */
-	public static function cacheFlushAll()
+	public function getCacheModelNamespace()
 	{
-		static::cacheResolver()->flushAll();
+		return ($this->getConnectionName() ?: 'default') . ':' . $this->getTable();
 	}
 	
-	/**
-	 * 清空当前表的所有缓存
-	 * @throws \Psr\SimpleCache\InvalidArgumentException
-	 */
-	public static function cacheFlush()
+	public static function flush()
 	{
-		static::cacheResolver()->flush();
-	}
-	
-	/**
-	 * 清空当前表指定键的缓存
-	 * @param $key
-	 * @throws \Psr\SimpleCache\InvalidArgumentException
-	 */
-	public static function cacheDeleteModel($key)
-	{
-		static::cacheResolver()->delModel($key);
-	}
-	
-	/**
-	 * 设置当前表主键缓存
-	 * @param $key
-	 * @param $value
-	 * @throws \Psr\SimpleCache\InvalidArgumentException
-	 */
-	public static function cacheSetModel($key, $value)
-	{
-		static::cacheResolver()->setModel($key, $value);
-	}
-	
-	/**
-	 * @param $key
-	 * @return bool
-	 * @throws \Psr\SimpleCache\InvalidArgumentException
-	 */
-	public static function cacheHasModel($key)
-	{
-		return static::cacheResolver()->hasModel($key);
-	}
-	
-	/**
-	 * @param $key
-	 * @return null|\stdClass
-	 * @throws \Psr\SimpleCache\InvalidArgumentException
-	 */
-	public static function cacheGetModel($key)
-	{
-		return static::cacheResolver()->getModel($key);
-	}
-	
-	/**
-	 * 有缓存记录，未必是缓存对象
-	 * @param $key
-	 * @return bool
-	 * @throws \Psr\SimpleCache\InvalidArgumentException
-	 */
-	public static function cacheHasKey($key)
-	{
-		return static::cacheResolver()->has($key);
-	}
-	
-	/**
-	 * @return Cache
-	 */
-	public static function cacheResolver()
-	{
-		static $cacheResolver;
-		if (empty($cacheResolver)) {
-			$cacheResolver = (new static)->getCacheResolver();
-		}
-		return $cacheResolver;
-	}
-	
-	/**
-	 * @return Cache
-	 * @throws InvalidArgumentException
-	 */
-	public function getCacheResolver()
-	{
-		return (new Cache())->tags($this->getCacheTag());
+		Tag::flush((new static())->getCacheModelNamespace());
 	}
 	
 	/**

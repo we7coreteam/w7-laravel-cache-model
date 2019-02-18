@@ -6,7 +6,7 @@
  * Time: 13:34
  */
 
-namespace W7\Laravel\CacheModel;
+namespace W7\Laravel\CacheModel\Caches;
 
 
 use W7\Laravel\CacheModel\Exceptions\InvalidArgumentException;
@@ -17,17 +17,21 @@ use W7\Laravel\CacheModel\Exceptions\InvalidArgumentException;
  */
 class Cache
 {
-	public const NULL = 'nil&null';
+	const FOREVER = 3153600000; //86400 * 365 * 100;
+	
+	const NULL = 'nil&null';
+	
+	private static $singleton;
+	
+	public static function singleton()
+	{
+		return static::$singleton ?? (static::$singleton = new static());
+	}
 	
 	/**
-	 * @var CacheResolver
+	 * @var \Psr\SimpleCache\CacheInterface
 	 */
 	private $cache;
-	
-	/**
-	 * @var Tag
-	 */
-	private $tag;
 	
 	/**
 	 * Cache constructor.
@@ -35,28 +39,7 @@ class Cache
 	 */
 	public function __construct()
 	{
-		$this->cache = new CacheResolver();
-	}
-	
-	/**
-	 * @param Tag $tag
-	 * @return Cache
-	 */
-	public function tags($tag)
-	{
-		$this->tag = $tag;
-		
-		return $this;
-	}
-	
-	/**
-	 * @param $key
-	 * @return string
-	 * @throws \Psr\SimpleCache\InvalidArgumentException
-	 */
-	private function cacheKey($key)
-	{
-		return $this->tag->getCacheKey($key);
+		$this->cache = CacheResolver::getCacheResolver();
 	}
 	
 	/**
@@ -66,7 +49,7 @@ class Cache
 	 */
 	public function set($key, $model)
 	{
-		$this->cache->set($this->cacheKey($key), $model);
+		$this->cache->set($key, $model, static::FOREVER);
 	}
 	
 	/**
@@ -76,7 +59,7 @@ class Cache
 	 */
 	public function get($key)
 	{
-		return $this->cache->get($this->cacheKey($key));
+		return $this->cache->get($key);
 	}
 	
 	/**
@@ -87,7 +70,7 @@ class Cache
 	 */
 	public function has($key)
 	{
-		return $this->cache->has($this->cacheKey($key));
+		return $this->cache->has($key);
 	}
 	
 	/**
@@ -97,25 +80,17 @@ class Cache
 	 */
 	public function del($key)
 	{
-		return $this->cache->delete($this->cacheKey($key));
+		return $this->cache->delete($key);
 	}
 	
 	/**
 	 * 清空当前表的缓存
+	 * @param string $namespace
 	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
-	public function flush()
+	public function flush($namespace = '')
 	{
-		$this->tag->flush();
-	}
-	
-	/**
-	 * 清空当前表所在数据库的缓存
-	 * @throws \Psr\SimpleCache\InvalidArgumentException
-	 */
-	public function flushAll()
-	{
-		$this->tag->flushAll();
+		Tag::flush($namespace);
 	}
 	
 	/**
@@ -152,7 +127,7 @@ class Cache
 	 */
 	public function delModel($key)
 	{
-		return $this->cache->delete($this->cacheKey($key));
+		return $this->del($key);
 	}
 	
 	/**
