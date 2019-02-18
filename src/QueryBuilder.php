@@ -10,6 +10,7 @@ namespace W7\Laravel\CacheModel;
 
 use Illuminate\Database\Query\Builder as DatabaseQueryBuilder;
 use W7\Laravel\CacheModel\Exceptions\CacheKeyNotExistsException;
+use W7\Laravel\CacheModel\Exceptions\InvalidArgumentException;
 
 class QueryBuilder extends DatabaseQueryBuilder
 {
@@ -62,14 +63,9 @@ class QueryBuilder extends DatabaseQueryBuilder
 	{
 		try {
 			$id = parent::insertGetId($values, $sequence);
-			
-			ll('insertGetId', $id);
-			
 		} finally {
 			if ($this->needCache() && !empty($id)) {
 				$this->getCacheResolver()->delModel($id);
-				
-				ll('insert del model' . $this->getCacheModel()->getTable() . ' ' . $id);
 			}
 		}
 	}
@@ -87,8 +83,6 @@ class QueryBuilder extends DatabaseQueryBuilder
 		} finally {
 			if ($this->getCacheModel()->exists && $this->needCache()) {
 				$this->getCacheResolver()->delModel($this->getCacheModel()->getKey());
-				
-				ll('delete del model ' . $this->getCacheModel()->getTable() . ' ' . $this->cacheModel->getKey());
 			}
 		}
 	}
@@ -106,8 +100,6 @@ class QueryBuilder extends DatabaseQueryBuilder
 		} finally {
 			if ($this->getCacheModel()->exists && $this->needCache()) {
 				$this->getCacheResolver()->delModel($this->cacheModel->getKey());
-				
-				ll('update ' . $this->getCacheModel()->getTable() . ' ' . $this->cacheModel->getKey());
 			}
 		}
 	}
