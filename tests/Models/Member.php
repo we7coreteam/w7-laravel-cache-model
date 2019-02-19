@@ -29,10 +29,6 @@ class Member extends Model
 	
 	protected $primaryKey = 'uid';
 	
-	// protected $with = ['memberCount'];
-	
-	protected $useCache = true;
-	
 	protected $fillable = [
 		'uid',
 		'username',

@@ -36,6 +36,7 @@ class Tag
 	 * @param $key
 	 * @param $namespace
 	 * @return string
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public static function getCacheKey($key, $namespace)
 	{
@@ -46,33 +47,28 @@ class Tag
 		return static::getPrefix($pieces) . ':' . $key;
 	}
 	
+	/**
+	 * @param $pieces
+	 * @return mixed
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
+	 */
 	public static function getPrefix($pieces)
 	{
 		$cache = Cache::singleton();
 		
 		$length = count($pieces);
 		for ($i = 0; $i < $length; $i++) {
-			if ($i == 0) {
-				$key   = Tag::joinPieces($pieces, 1);
-				$value = $cache->get($key);
-				if (empty($value)) {
-					$value = static::hash($key);
-					$cache->set($key, $value);
-				}
-			} else {
-				$key   = Tag::joinPieces($pieces, $i + 1);
-				$value = $cache->get($key);
-				if (empty($value)) {
-					// 'a'
-					$parent_key = Tag::joinPieces($pieces, $i);
-					// 'a' => value
-					$parent_value = $cache->get($parent_key);
-					// 'b'
-					$suffix = $pieces[$i];
-					
-					$value = static::hash($parent_value . ':' . $suffix);
-					$cache->set($key, $value);
-				}
+			$key   = Tag::joinPieces($pieces, $i + 1);
+			$value = $cache->get($key);
+			if (empty($value)) {
+				// 'a:b'
+				$pre_key   = Tag::joinPieces($pieces, $i);// 'a'
+				$pre_value = $cache->get($pre_key) ?? '';// 'a' => value
+				
+				$suffix = $pieces[$i];// 'b'
+				
+				$value = static::hash($pre_value, $suffix);
+				$cache->set($key, $value);
 			}
 		}
 		
@@ -89,14 +85,21 @@ class Tag
 	{
 		$length = count($pieces);
 		$array  = [];
-		for ($i = 0; $i < $n && $n <= $length && $i < $n; $i++) {
+		for ($i = 0; $i < $n && $n >= 0 && $n <= $length; $i++) {
 			$array[] = $pieces[$i];
 		}
 		return join(':', $array);
 	}
 	
-	private static function hash($content)
+	/**
+	 * @param mixed ...$contents
+	 * @return string
+	 */
+	private static function hash(...$contents)
 	{
-		return md5(uniqid($content . str_random(8)));
+		$params   = func_get_args();
+		$params[] = str_random(8);
+		
+		return md5(uniqid(join(':', $params)));
 	}
 }

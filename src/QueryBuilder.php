@@ -48,19 +48,15 @@ class QueryBuilder extends DatabaseQueryBuilder
 	
 	/**
 	 * @return Cache
-	 * @throws InvalidArgumentException
 	 */
 	public function getCacheResolver()
 	{
-		$namespace = $this->getCacheModel()->getCacheModelNamespace();
-		
-		return CacheFactory::getInstance($namespace);
+		return Cache::singleton();
 	}
 	
 	/**
 	 * @param $key
 	 * @param $model
-	 * @throws InvalidArgumentException
 	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public function cacheSetModel($key, $model)
@@ -73,7 +69,6 @@ class QueryBuilder extends DatabaseQueryBuilder
 	/**
 	 * @param $key
 	 * @return \stdClass|null
-	 * @throws InvalidArgumentException
 	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public function cacheGetModel($key)
@@ -86,7 +81,6 @@ class QueryBuilder extends DatabaseQueryBuilder
 	/**
 	 * @param $key
 	 * @return \stdClass|null
-	 * @throws InvalidArgumentException
 	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public function cacheDelModel($key)
@@ -99,7 +93,6 @@ class QueryBuilder extends DatabaseQueryBuilder
 	/**
 	 * @param $key
 	 * @return bool
-	 * @throws InvalidArgumentException
 	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public function cacheHasModel($key)
@@ -110,9 +103,22 @@ class QueryBuilder extends DatabaseQueryBuilder
 	}
 	
 	/**
+	 * @param $key
+	 * @return bool
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
+	 */
+	public function cacheHasKey($key)
+	{
+		$key = $this->getCacheKey($key);
+		
+		return $this->getCacheResolver()->has($key);
+	}
+	
+	/**
 	 * 获取缓存的键
 	 * @param $key
 	 * @return string
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public function getCacheKey($key)
 	{
@@ -123,7 +129,6 @@ class QueryBuilder extends DatabaseQueryBuilder
 	 * @param array $values
 	 * @param null  $sequence
 	 * @return int|void
-	 * @throws InvalidArgumentException
 	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public function insertGetId(array $values, $sequence = null)
@@ -140,7 +145,6 @@ class QueryBuilder extends DatabaseQueryBuilder
 	/**
 	 * @param null $id
 	 * @return int
-	 * @throws InvalidArgumentException
 	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public function delete($id = null)
@@ -149,8 +153,7 @@ class QueryBuilder extends DatabaseQueryBuilder
 			return parent::delete($id);
 		} finally {
 			if ($this->getCacheModel()->exists && $this->needCache()) {
-				$pk = $id ?? $this->getCacheModel()->getKey();
-				$this->getCacheResolver()->delModel($this->getCacheKey($pk));
+				$this->cacheDelModel($id ?? $this->getCacheModel()->getKey());
 			}
 		}
 	}
@@ -158,7 +161,6 @@ class QueryBuilder extends DatabaseQueryBuilder
 	/**
 	 * @param array $values
 	 * @return int
-	 * @throws InvalidArgumentException
 	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public function update(array $values)
@@ -167,8 +169,7 @@ class QueryBuilder extends DatabaseQueryBuilder
 			return parent::update($values);
 		} finally {
 			if ($this->getCacheModel()->exists && $this->needCache()) {
-				$pk = $this->cacheModel->getKey();
-				$this->getCacheResolver()->delModel($this->getCacheKey($pk));
+				$this->cacheDelModel($this->cacheModel->getKey());
 			}
 		}
 	}
@@ -254,13 +255,13 @@ class QueryBuilder extends DatabaseQueryBuilder
 			
 			try {
 				$ids->each(function ($id) {
-					if (!$this->getCacheResolver()->has($this->getCacheKey($id))) {
+					if (!$this->cacheHasKey($id)) {
 						throw new CacheKeyNotExistsException('cache missing');
 					}
 				});
 				
 				$rows = $ids->map(function ($id) {
-					return $this->getCacheResolver()->getModel($this->getCacheKey($id));
+					return $this->cacheGetModel($id);
 				})->filter(function ($row) {
 					return !empty($row);
 				});
@@ -273,6 +274,7 @@ class QueryBuilder extends DatabaseQueryBuilder
 			} catch (CacheKeyNotExistsException $e) {
 				// 防止缓存击穿
 				// jd($e->getMessage());
+				$e->getMessage();
 			}
 		}
 		
@@ -283,12 +285,12 @@ class QueryBuilder extends DatabaseQueryBuilder
 		if ($cacheFindFirst) {
 			$primaryKey = $this->getCacheModel()->getKeyName();
 			foreach ($rows as $row) {
-				$this->getCacheResolver()->setModel($this->getCacheKey($row->{$primaryKey}), $row);
+				$this->cacheSetModel($row->{$primaryKey}, $row);
 			}
 			if (!empty($ids)) {
 				$ids->each(function ($id) {
-					if (!$this->getCacheResolver()->has($this->getCacheKey($id))) {
-						$this->getCacheResolver()->setModel($this->getCacheKey($id), null); // 防止缓存击穿
+					if (!$this->cacheHasKey($id)) {
+						$this->cacheSetModel($id, null);
 					}
 				});
 			}

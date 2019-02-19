@@ -9,14 +9,14 @@
 namespace W7\Laravel\CacheModel;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model as BaseModel;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
 use W7\Laravel\CacheModel\Caches\Tag;
 
 /**
  * Class Model
  * @package W7\Laravel\CacheModel
  */
-abstract class Model extends BaseModel
+abstract class Model extends EloquentModel
 {
 	/**
 	 * 是否使用缓存
@@ -33,11 +33,19 @@ abstract class Model extends BaseModel
 		return $this->useCache;
 	}
 	
+	/**
+	 * 获取表的缓存命名空间
+	 * @return string
+	 */
 	public function getCacheModelNamespace()
 	{
 		return ($this->getConnectionName() ?: 'default') . ':' . $this->getTable();
 	}
 	
+	/**
+	 * 清空表的缓存
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
+	 */
 	public static function flush()
 	{
 		Tag::flush((new static())->getCacheModelNamespace());
