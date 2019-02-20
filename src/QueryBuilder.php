@@ -10,10 +10,8 @@ namespace W7\Laravel\CacheModel;
 
 use Illuminate\Database\Query\Builder as DatabaseQueryBuilder;
 use W7\Laravel\CacheModel\Caches\Cache;
-use W7\Laravel\CacheModel\Caches\CacheFactory;
 use W7\Laravel\CacheModel\Caches\Tag;
 use W7\Laravel\CacheModel\Exceptions\CacheKeyNotExistsException;
-use W7\Laravel\CacheModel\Exceptions\InvalidArgumentException;
 
 class QueryBuilder extends DatabaseQueryBuilder
 {
