@@ -68,7 +68,7 @@ class Cache
 			
 			// static::$needSerialize = !is_object($get);
 			
-			ll('static::$needSerialize', static::$needSerialize);
+			// ll('static::$needSerialize', static::$needSerialize);
 		}
 		return static::$needSerialize;
 	}
@@ -174,7 +174,7 @@ class Cache
 		
 		$value = $this->unserialize($value);
 		
-		jd($key, $value);
+		// jd($key, $value);
 		
 		if ($this->isValidData($value)) {
 			return $value;
