@@ -22,17 +22,55 @@ class Cache
 	
 	const NULL = 'nil&null';
 	
+	private static $implemented = false;
+	
+	private static $needSerialize = null;
+	
 	/**
 	 * @var CacheInterface
 	 */
-	private static $cacheInterfaceSingleton;
+	private static $cacheInterfaceSingleton = null;
 	
 	/**
 	 * @param CacheInterface $cache
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public static function setCacheResolver(CacheInterface $cache)
 	{
 		static::$cacheInterfaceSingleton = $cache;
+		
+		static::$implemented = true;
+		
+		static::needSerialize();
+	}
+	
+	/**
+	 * 存取对象是否需要序列化和反序列化
+	 * @return bool
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
+	 */
+	protected static function needSerialize()
+	{
+		if (!static::isImplemented()) {
+			return false;
+		}
+		
+		if (is_null(static::$needSerialize)) {
+			static::$cacheInterfaceSingleton->set('test', new \stdClass(), 1);
+			$get = static::$cacheInterfaceSingleton->get('test');
+			
+			static::$needSerialize = !is_object($get);
+			// ll('serialize', static::$needSerialize);
+		}
+		return static::$needSerialize;
+	}
+	
+	/**
+	 * @return bool
+	 */
+	public static function isImplemented()
+	{
+		return static::$implemented;
 	}
 	
 	/**
@@ -71,11 +109,38 @@ class Cache
 	}
 	
 	/**
-	 * Cache constructor.
+	 * Serialize the value.
+	 *
+	 * @param  mixed $value
+	 * @return mixed
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
-	public function __construct()
+	protected function serialize($value)
 	{
+		if (!static::needSerialize()) {
+			return $value;
+		}
+		return is_numeric($value) ? $value : serialize($value);
+	}
 	
+	/**
+	 * Unserialize the value.
+	 *
+	 * @param  mixed $value
+	 * @return mixed
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
+	 */
+	protected function unserialize($value)
+	{
+		if (!static::needSerialize()) {
+			return $value;
+		}
+		return is_numeric($value) ? $value : unserialize($value);
+	}
+	
+	protected function isValidData($var)
+	{
+		return is_numeric($var) || is_object($var) || is_null($var);
 	}
 	
 	/**
@@ -85,6 +150,8 @@ class Cache
 	 */
 	public function set($key, $value)
 	{
+		$value = $this->serialize($value);
+		
 		$this->getCache()->set($key, $value, static::FOREVER);
 	}
 	
@@ -95,7 +162,14 @@ class Cache
 	 */
 	public function get($key)
 	{
-		return $this->getCache()->get($key);
+		$value = $this->getCache()->get($key);
+		$value = $this->unserialize($value);
+		
+		if ($this->isValidData($value)) {
+			return $value;
+		} else {
+			return null;
+		}
 	}
 	
 	/**

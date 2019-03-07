@@ -10,6 +10,7 @@ namespace W7\Laravel\CacheModel;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
+use W7\Laravel\CacheModel\Caches\Cache;
 use W7\Laravel\CacheModel\Caches\Tag;
 
 /**
@@ -30,7 +31,7 @@ abstract class Model extends EloquentModel
 	 */
 	public function needCache()
 	{
-		return $this->useCache;
+		return $this->useCache && Cache::isImplemented();
 	}
 	
 	/**
