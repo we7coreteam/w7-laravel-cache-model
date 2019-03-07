@@ -22,8 +22,6 @@ class Cache
 	
 	const NULL = 'nil&null';
 	
-	private static $implemented = false;
-	
 	private static $needSerialize = null;
 	
 	/**
@@ -38,8 +36,6 @@ class Cache
 	public static function setCacheResolver(CacheInterface $cache)
 	{
 		static::$cacheInterfaceSingleton = $cache;
-		
-		static::$implemented = true;
 		
 		static::needSerialize();
 	}
@@ -70,7 +66,7 @@ class Cache
 	 */
 	public static function isImplemented()
 	{
-		return static::$implemented;
+		return !empty(static::$cacheInterfaceSingleton);
 	}
 	
 	/**
