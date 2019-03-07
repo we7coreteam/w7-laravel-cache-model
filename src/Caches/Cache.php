@@ -60,13 +60,13 @@ class Cache
 			static::$cacheInterfaceSingleton->set($key, $testObj, 1);
 			$get = static::$cacheInterfaceSingleton->get($key);
 			
-			if (is_object($get)) {
-				static::$needSerialize = false;
-			} else {
-				static::$needSerialize = true;
-			}
+			// if (is_object($get)) {
+			// 	static::$needSerialize = false;
+			// } else {
+			// 	static::$needSerialize = true;
+			// }
 			
-			// static::$needSerialize = !is_object($get);
+			static::$needSerialize = !is_object($get);
 			
 			// ll('static::$needSerialize', static::$needSerialize);
 		}

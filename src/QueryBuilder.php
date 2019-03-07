@@ -120,7 +120,13 @@ class QueryBuilder extends DatabaseQueryBuilder
 	 */
 	public function getCacheKey($key)
 	{
-		return Tag::getCacheKey($key, $this->getCacheModel()->getCacheModelNamespace());
+		$cacheKey =  Tag::getCacheKey($key, $this->getCacheModel()->getCacheModelNamespace());
+		
+		if (!Cache::needSerialize()) {
+			$cacheKey = unserialize($cacheKey);
+		}
+		
+		return $cacheKey;
 	}
 	
 	/**

@@ -14,7 +14,8 @@
         "illuminate/database": "^5.6",
         "illuminate/cache": "^5.6",
         "illuminate/contracts": "5.6",
-        "psr/simple-cache" : "*"
+        "psr/simple-cache" : "*",
+      "ext-redis": "*"
     },
     "require-dev": {
         "laravel/framework": "5.6.*",
