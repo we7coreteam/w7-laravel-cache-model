@@ -44,7 +44,9 @@ class Tag
 		
 		$pieces = explode(':', $namespace);
 		
-		return static::getPrefix($pieces) . ':' . $key;
+		$cacheKey = static::getPrefix($pieces) . ':' . $key;
+		
+		return $cacheKey;
 	}
 	
 	/**
@@ -54,12 +56,14 @@ class Tag
 	 */
 	public static function getPrefix($pieces)
 	{
-		$cache = Cache::singleton();
+		// $cache = Cache::singleton();
+		$cache = Cache::getCacheResolver();
 		
 		$length = count($pieces);
 		for ($i = 0; $i < $length; $i++) {
 			$key   = Tag::joinPieces($pieces, $i + 1);
 			$value = $cache->get($key);
+			
 			if (empty($value)) {
 				// 'a:b'
 				$pre_key   = Tag::joinPieces($pieces, $i);// 'a'
@@ -68,7 +72,7 @@ class Tag
 				$suffix = $pieces[$i];// 'b'
 				
 				$value = static::hash($pre_value, $suffix);
-				$cache->set($key, $value);
+				$cache->set($key, $value, Cache::FOREVER);
 			}
 		}
 		

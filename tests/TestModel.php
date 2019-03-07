@@ -11,6 +11,7 @@ namespace W7\Laravel\CacheModel\Tests;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use W7\Laravel\CacheModel\Caches\Tag;
 use W7\Laravel\CacheModel\Tests\Models\Member;
 use W7\Laravel\CacheModel\Tests\Models\MemberCount;
 
@@ -33,6 +34,41 @@ class TestModel extends TestCase
 		jd($cache->get('a'));
 	}
 	
+	public function testImpl()
+	{
+		$obj = new \stdClass();
+		$obj->name = 'js';
+		
+		$cache = \W7\Laravel\CacheModel\Caches\Cache::getCacheResolver();
+		$cache->set('a', $obj, 10);
+		
+		jd($cache->get('a'));
+	}
+	
+	public function testCache() {
+		// $key = '384942644ebcd01d369fc1194b4d7362:1';
+		
+		$obj = new \stdClass();
+		$obj->name = 'js';;
+		
+		$key = 'aa';
+		
+		$value = $obj;
+		
+		$cache = \W7\Laravel\CacheModel\Caches\Cache::singleton();
+		$cache->set($key, $value);
+		
+		$model =  $cache->get($key);
+		jd($model);
+	}
+	
+	public function testTag()
+	{
+		$tag = new Tag();
+		$key = Tag::getCacheKey(1, 'default:members');
+		jd($key);
+	}
+	
 	public function testA()
 	{
 		jd(join(':', []));
@@ -48,6 +84,10 @@ class TestModel extends TestCase
 		jd($user);
 	}
 	
+	
+	
+
+	
 	public function testFinds()
 	{
 		//		Member::flush();
@@ -57,6 +97,15 @@ class TestModel extends TestCase
 		$users = Member::query()->find($uid);
 		
 		jd($users);
+	}
+	
+	public function testMObile()
+	{
+		$uid = [1, 2, 5];
+		MemberCount::query()->find($uid);
+		$membercount = MemberCount::query()->find($uid);
+		
+		jd($membercount);
 	}
 	
 	public function testFindsColumns()

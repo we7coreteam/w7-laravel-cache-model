@@ -45,18 +45,30 @@ class Cache
 	 * @return bool
 	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
-	protected static function needSerialize()
+	public static function needSerialize()
 	{
 		if (!static::isImplemented()) {
 			return false;
 		}
 		
 		if (is_null(static::$needSerialize)) {
-			static::$cacheInterfaceSingleton->set('test', new \stdClass(), 1);
-			$get = static::$cacheInterfaceSingleton->get('test');
+			$key = Tag::PREFIX . ':test';
 			
-			static::$needSerialize = !is_object($get);
-			// ll('serialize', static::$needSerialize);
+			$testObj       = new \stdClass();
+			$testObj->name = 'test';
+			
+			static::$cacheInterfaceSingleton->set($key, $testObj, 1);
+			$get = static::$cacheInterfaceSingleton->get($key);
+			
+			if (is_object($get)) {
+				static::$needSerialize = false;
+			} else {
+				static::$needSerialize = true;
+			}
+			
+			// static::$needSerialize = !is_object($get);
+			
+			ll('static::$needSerialize', static::$needSerialize);
 		}
 		return static::$needSerialize;
 	}
@@ -159,7 +171,10 @@ class Cache
 	public function get($key)
 	{
 		$value = $this->getCache()->get($key);
+		
 		$value = $this->unserialize($value);
+		
+		jd($key, $value);
 		
 		if ($this->isValidData($value)) {
 			return $value;
