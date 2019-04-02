@@ -54,22 +54,16 @@ class Cache
 		if (is_null(static::$needSerialize)) {
 			$key = Tag::PREFIX . ':test';
 			
-			$testObj       = new \stdClass();
-			$testObj->name = 'test';
+			$testObj = new \stdClass();
 			
 			static::$cacheInterfaceSingleton->set($key, $testObj, 1);
 			$get = static::$cacheInterfaceSingleton->get($key);
 			
-			// if (is_object($get)) {
-			// 	static::$needSerialize = false;
-			// } else {
-			// 	static::$needSerialize = true;
-			// }
-			
 			static::$needSerialize = !is_object($get);
 			
-			// ll('static::$needSerialize', static::$needSerialize);
+			static::$cacheInterfaceSingleton->delete($key);
 		}
+		
 		return static::$needSerialize;
 	}
 	
@@ -119,7 +113,7 @@ class Cache
 	/**
 	 * Serialize the value.
 	 *
-	 * @param  mixed $value
+	 * @param mixed $value
 	 * @return mixed
 	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
@@ -128,13 +122,13 @@ class Cache
 		if (!static::needSerialize()) {
 			return $value;
 		}
-		return is_numeric($value) ? $value : serialize($value);
+		return serialize($value);
 	}
 	
 	/**
 	 * Unserialize the value.
 	 *
-	 * @param  mixed $value
+	 * @param mixed $value
 	 * @return mixed
 	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
@@ -143,7 +137,7 @@ class Cache
 		if (!static::needSerialize()) {
 			return $value;
 		}
-		return is_numeric($value) ? $value : unserialize($value);
+		return unserialize($value);
 	}
 	
 	protected function isValidData($var)
@@ -262,5 +256,20 @@ class Cache
 		$model = $this->getModel($key);
 		
 		return !empty($model);
+	}
+	
+	public function setCollection($key, $collection)
+	{
+	
+	}
+	
+	public function getCollection($key)
+	{
+	
+	}
+	
+	public function delCollection($key)
+	{
+	
 	}
 }

@@ -9,7 +9,10 @@
 namespace W7\Laravel\CacheModel\Tests\Models;
 
 
-class Text
+use W7\Laravel\CacheModel\Model;
+
+class Text extends Model
 {
-	
+	public $timestamps = false;
+	protected $table = 'core_text';
 }

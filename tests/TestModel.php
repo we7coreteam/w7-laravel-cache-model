@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use W7\Laravel\CacheModel\Caches\Tag;
 use W7\Laravel\CacheModel\Tests\Models\Member;
 use W7\Laravel\CacheModel\Tests\Models\MemberCount;
+use W7\Laravel\CacheModel\Tests\Models\Text;
 
 class TestModel extends TestCase
 {
@@ -36,7 +37,7 @@ class TestModel extends TestCase
 	
 	public function testImpl()
 	{
-		$obj = new \stdClass();
+		$obj       = new \stdClass();
 		$obj->name = 'js';
 		
 		$cache = \W7\Laravel\CacheModel\Caches\Cache::getCacheResolver();
@@ -45,10 +46,11 @@ class TestModel extends TestCase
 		jd($cache->get('a'));
 	}
 	
-	public function testCache() {
+	public function testCache()
+	{
 		// $key = '384942644ebcd01d369fc1194b4d7362:1';
 		
-		$obj = new \stdClass();
+		$obj       = new \stdClass();
 		$obj->name = 'js';;
 		
 		$key = 'aa';
@@ -58,7 +60,7 @@ class TestModel extends TestCase
 		$cache = \W7\Laravel\CacheModel\Caches\Cache::singleton();
 		$cache->set($key, $value);
 		
-		$model =  $cache->get($key);
+		$model = $cache->get($key);
 		jd($model);
 	}
 	
@@ -67,6 +69,15 @@ class TestModel extends TestCase
 		$tag = new Tag();
 		$key = Tag::getCacheKey(1, 'default:members');
 		jd($key);
+	}
+	
+	public function testSave()
+	{
+		$text = new Text();
+		$text->content = time().'';
+		$text->save();
+		
+		jd($text);
 	}
 	
 	public function testA()
@@ -78,15 +89,12 @@ class TestModel extends TestCase
 	{
 		// Member::flush();
 		
-		$uid  = 1;
+		$uid  =2;
 		$user = Member::query()->find($uid);
 		$user = Member::query()->find($uid);
 		jd($user);
 	}
 	
-	
-	
-
 	
 	public function testFinds()
 	{

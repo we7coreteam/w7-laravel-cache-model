@@ -120,25 +120,24 @@ class QueryBuilder extends DatabaseQueryBuilder
 	 */
 	public function getCacheKey($key)
 	{
-		$cacheKey =  Tag::getCacheKey($key, $this->getCacheModel()->getCacheModelNamespace());
-		
-		if (!Cache::needSerialize()) {
+		$cacheKey = Tag::getCacheKey($key, $this->getCacheModel()->getCacheModelNamespace());
+		if (Cache::needSerialize()) {
 			$cacheKey = unserialize($cacheKey);
 		}
-		
 		return $cacheKey;
 	}
 	
 	/**
 	 * @param array $values
 	 * @param null  $sequence
-	 * @return int|void
+	 * @return int
 	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public function insertGetId(array $values, $sequence = null)
 	{
 		try {
 			$id = parent::insertGetId($values, $sequence);
+			return $id;
 		} finally {
 			if ($this->needCache() && !empty($id)) {
 				$this->cacheDelModel($id);
@@ -302,4 +301,6 @@ class QueryBuilder extends DatabaseQueryBuilder
 		
 		return $rows;
 	}
+	
+	
 }

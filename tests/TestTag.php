@@ -10,22 +10,75 @@ namespace W7\Laravel\CacheModel\Tests;
 
 
 use Illuminate\Support\Facades\Cache;
-use W7\Laravel\CacheModel\CacheResolver;
-use W7\Laravel\CacheModel\Tag;
+use W7\Laravel\CacheModel\Caches\BatchCache;
+use W7\Laravel\CacheModel\Caches\Tag;
+use W7\Laravel\CacheModel\Tests\Models\Member;
+
 
 class TestTag extends TestCase
 {
+	/**
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
+	 */
 	public function setUp()
 	{
 		parent::setUp();
 		
-		CacheResolver::setCacheResolver(Cache::store());
+		\W7\Laravel\CacheModel\Caches\Cache::setCacheResolver(Cache::store());
 	}
 	
 	/**
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public function testTag()
 	{
-		new Tag();
+		ll(Tag::getPrefix(['a']));
+		ll(Tag::getPrefix(['a', 'b']));
+		ll(Tag::getPrefix(['a', 'b', 'c']));
+	}
+	
+	public function testSelfDefine()
+	{
+		ll(Tag::getCacheKey('a', 'w7:ty'));
+		ll(Tag::getCacheKey('b', 'w7:ty'));
+	}
+	
+	public function testCollection()
+	{
+		$arr = collect([1, 2, 3]);
+		$arr->each(function ($value, $index) {
+			ll($index, $value);
+		});
+	}
+	
+	/**
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
+	 */
+	public function testBatchCache()
+	{
+		$cache_key = 'members_3';
+		// $members = Member::query()->take(3)->get();
+		//
+		$cache = new BatchCache(\W7\Laravel\CacheModel\Caches\Cache::singleton());
+		// $cache->set($cache_key, $members);
+		
+		dd($cache->get($cache_key));
+		
+	}
+	
+	public function testGet()
+	{
+		// $members = Member::query()->take(3)->get();
+		$members = Member::query()->where('uid', '<', 10)->with('memberCount')->cacheGet('aaa');
+		
+		jd($members->keyBy('uid'));
+	}
+	
+	/**
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
+	 */
+	public function testFlush()
+	{
+		Member::batchFlush('aaa');;
 	}
 }

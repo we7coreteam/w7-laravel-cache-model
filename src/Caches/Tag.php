@@ -50,6 +50,14 @@ class Tag
 	}
 	
 	/**
+	 * a:b:c:d
+	 *
+	 * a     => k1
+	 * a:b   => k2
+	 * a:b:c => k3
+	 *
+	 * a:b:c:N => (a:b:c):N => k3:N => cache get
+	 *
 	 * @param $pieces
 	 * @return mixed
 	 * @throws \Psr\SimpleCache\InvalidArgumentException

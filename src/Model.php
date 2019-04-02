@@ -10,6 +10,7 @@ namespace W7\Laravel\CacheModel;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
+use W7\Laravel\CacheModel\Caches\BatchCache;
 use W7\Laravel\CacheModel\Caches\Cache;
 use W7\Laravel\CacheModel\Caches\Tag;
 
@@ -53,15 +54,28 @@ abstract class Model extends EloquentModel
 	}
 	
 	/**
+	 * 清空某个键的缓存,所有的键都在 batch_cache 名称空间下
+	 * @param $key
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
+	 */
+	public static function BatchFlush($key)
+	{
+		$batchCache = new BatchCache(Cache::singleton());
+		$batchCache->flush($key);
+	}
+	
+	
+	/**
 	 * @param \Illuminate\Database\Query\Builder $query
 	 * @return Builder|EloquentBuilder|static
 	 */
-	// public function newEloquentBuilder($query)
-	// {
-	// 	$builder = new EloquentBuilder($query);
-	//
-	// 	return $builder;
-	// }
+	public function newEloquentBuilder($query)
+	{
+		$builder = new EloquentBuilder($query);
+		$builder->setCacheModel($this);
+		
+		return $builder;
+	}
 	
 	/**
 	 * @return \Illuminate\Database\Query\Builder|QueryBuilder
