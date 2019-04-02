@@ -10,6 +10,7 @@ namespace W7\Laravel\CacheModel\Caches;
 
 
 use Psr\SimpleCache\CacheInterface;
+use stdClass;
 use W7\Laravel\CacheModel\Exceptions\InvalidArgumentException;
 
 /**
@@ -54,7 +55,7 @@ class Cache
 		if (is_null(static::$needSerialize)) {
 			$key = Tag::PREFIX . ':test';
 			
-			$testObj = new \stdClass();
+			$testObj = new stdClass();
 			
 			static::$cacheInterfaceSingleton->set($key, $testObj, 1);
 			$get = static::$cacheInterfaceSingleton->get($key);
@@ -146,15 +147,17 @@ class Cache
 	}
 	
 	/**
-	 * @param $key
-	 * @param $value
+	 * @param      $key
+	 * @param      $value
+	 * @param null $ttl
+	 * @throws InvalidArgumentException
 	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
-	public function set($key, $value)
+	public function set($key, $value, $ttl = null)
 	{
 		$value = $this->serialize($value);
 		
-		$this->getCache()->set($key, $value, static::FOREVER);
+		$this->getCache()->set($key, $value, $ttl ?? static::FOREVER);
 	}
 	
 	/**
@@ -210,7 +213,7 @@ class Cache
 	
 	/**
 	 * @param string         $key
-	 * @param \stdClass|null $model
+	 * @param stdClass|null $model
 	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public function setModel($key, $model)
@@ -223,7 +226,7 @@ class Cache
 	/**
 	 * 获取缓存中键为 $key 的记录
 	 * @param $key
-	 * @return \stdClass|null
+	 * @return stdClass|null
 	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public function getModel($key)
@@ -256,20 +259,5 @@ class Cache
 		$model = $this->getModel($key);
 		
 		return !empty($model);
-	}
-	
-	public function setCollection($key, $collection)
-	{
-	
-	}
-	
-	public function getCollection($key)
-	{
-	
-	}
-	
-	public function delCollection($key)
-	{
-	
 	}
 }

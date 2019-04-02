@@ -10,6 +10,7 @@ namespace W7\Laravel\CacheModel\Tests;
 
 
 use Illuminate\Support\Facades\Cache;
+use Psr\SimpleCache\InvalidArgumentException;
 use W7\Laravel\CacheModel\Caches\BatchCache;
 use W7\Laravel\CacheModel\Caches\Tag;
 use W7\Laravel\CacheModel\Tests\Models\Member;
@@ -18,7 +19,7 @@ use W7\Laravel\CacheModel\Tests\Models\Member;
 class TestTag extends TestCase
 {
 	/**
-	 * @throws \Psr\SimpleCache\InvalidArgumentException
+	 * @throws InvalidArgumentException
 	 */
 	public function setUp()
 	{
@@ -28,7 +29,7 @@ class TestTag extends TestCase
 	}
 	
 	/**
-	 * @throws \Psr\SimpleCache\InvalidArgumentException
+	 * @throws InvalidArgumentException
 	 */
 	public function testTag()
 	{
@@ -52,7 +53,7 @@ class TestTag extends TestCase
 	}
 	
 	/**
-	 * @throws \Psr\SimpleCache\InvalidArgumentException
+	 * @throws InvalidArgumentException
 	 */
 	public function testBatchCache()
 	{
@@ -69,16 +70,17 @@ class TestTag extends TestCase
 	public function testGet()
 	{
 		// $members = Member::query()->take(3)->get();
-		$members = Member::query()->where('uid', '<', 10)->with('memberCount')->cacheGet('aaa');
+		$members = Member::query()->where('uid', '<', 10)->with('memberCount')->cacheGet('aaa', 1);
 		
 		jd($members->keyBy('uid'));
 	}
 	
 	/**
-	 * @throws \Psr\SimpleCache\InvalidArgumentException
+	 * @throws InvalidArgumentException
 	 */
 	public function testFlush()
 	{
-		Member::batchFlush('aaa');;
+		\W7\Laravel\CacheModel\Caches\Cache::singleton()->getCache()->clear();;
+		// Member::batchFlush('aaa');;
 	}
 }

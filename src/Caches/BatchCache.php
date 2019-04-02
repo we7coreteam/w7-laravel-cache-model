@@ -5,7 +5,7 @@ namespace W7\Laravel\CacheModel\Caches;
 
 
 use Illuminate\Support\Collection;
-use Psr\SimpleCache\InvalidArgumentException;
+use W7\Laravel\CacheModel\Exceptions\InvalidArgumentException;
 
 class BatchCache
 {
@@ -32,7 +32,7 @@ class BatchCache
 	/**
 	 * @param string $key
 	 * @return string
-	 * @throws InvalidArgumentException
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	protected function getCacheKey($key)
 	{
@@ -42,7 +42,7 @@ class BatchCache
 	/**
 	 * @param $key
 	 * @return string
-	 * @throws InvalidArgumentException
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	protected function getSizeCacheKey($key)
 	{
@@ -53,7 +53,7 @@ class BatchCache
 	 * @param $key
 	 * @param $index
 	 * @return string
-	 * @throws InvalidArgumentException
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	protected function getIndexCacheKey($key, $index)
 	{
@@ -63,7 +63,7 @@ class BatchCache
 	/**
 	 * @param string $key
 	 * @return int
-	 * @throws InvalidArgumentException
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	protected function getSize($key)
 	{
@@ -75,33 +75,37 @@ class BatchCache
 	/**
 	 * @param $key
 	 * @param $value
+	 * @param $ttl
 	 * @throws InvalidArgumentException
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
-	protected function setSize($key, $value)
+	protected function setSize($key, $value, $ttl)
 	{
 		$sizeCacheKey = $this->getSizeCacheKey($key);
 		
-		$this->getCache()->set($sizeCacheKey, $value);
+		$this->getCache()->set($sizeCacheKey, $value, $ttl);
 	}
 	
 	/**
 	 * @param $key
 	 * @param $i
 	 * @param $item
+	 * @param $ttl
 	 * @throws InvalidArgumentException
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
-	protected function setItem($key, $i, $item)
+	protected function setItem($key, $i, $item, $ttl)
 	{
 		$indexCacheKey = $this->getIndexCacheKey($key, $i);
 		
-		$this->getCache()->set($indexCacheKey, $item);
+		$this->getCache()->set($indexCacheKey, $item, $ttl);
 	}
 	
 	/**
 	 * @param $key
 	 * @param $index
 	 * @return mixed
-	 * @throws InvalidArgumentException
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	protected function getItem($key, $index)
 	{
@@ -111,42 +115,39 @@ class BatchCache
 	}
 	
 	/**
-	 * @param mixed $key
-	 * @param array $array
-	 * @throws InvalidArgumentException
+	 * @param string   $key
+	 * @param array    $array
+	 * @param int|null $ttl
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
-	public function set($key, $array)
+	public function set($key, $array, $ttl = null)
 	{
 		$size = count($array);
 		
-		$this->setSize($key, $size);
-		
-		// TODO:
-		// keys: 0, 1 , 2, ...
-		// keys: 'a', 'b', 'c'
+		$this->setSize($key, $size, $ttl);
 		
 		$cache = $this->getCache();
 		foreach ($array as $index => $item) {
 			$cacheKey = $this->getIndexCacheKey($key, $index);
 			
-			$cache->set($cacheKey, $item);
+			$cache->set($cacheKey, $item, $ttl);
 		}
 	}
 	
 	/**
 	 * @param $key
-	 * @throws InvalidArgumentException
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public function flush($key)
 	{
-		$this->setSize($key, 0);
+		$this->setSize($key, 0, 0);
 	}
 	
 	/**
 	 * 返回值为 false, 数据损坏
 	 * @param $key
 	 * @return bool|Collection|array
-	 * @throws InvalidArgumentException
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public function get($key)
 	{
@@ -177,7 +178,7 @@ class BatchCache
 	
 	/**
 	 * @param $key
-	 * @throws InvalidArgumentException
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
 	public function delete($key)
 	{

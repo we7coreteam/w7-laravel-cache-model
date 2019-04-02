@@ -45,6 +45,9 @@ class EloquentBuilder extends Builder
 		return false;
 	}
 	
+	/**
+	 * @var BatchCache
+	 */
 	protected $batchCache = null;
 	
 	public function __construct(QueryBuilder $query)
@@ -56,11 +59,12 @@ class EloquentBuilder extends Builder
 	
 	/**
 	 * @param       $cacheKey
+	 * @param null  $ttl
 	 * @param array $columns
 	 * @return \Illuminate\Database\Eloquent\Collection
 	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
-	public function cacheGet($cacheKey, $columns = ['*'])
+	public function cacheGet($cacheKey, $ttl = null, $columns = ['*'])
 	{
 		$builder = $this->applyScopes();
 		
@@ -69,7 +73,7 @@ class EloquentBuilder extends Builder
 			if (count($models = $builder->getModels($columns)) > 0) {
 				$models = $builder->eagerLoadRelations($models);
 				
-				$this->batchCache->set($cacheKey, $models);
+				$this->batchCache->set($cacheKey, $models, $ttl);
 			}
 		}
 		
