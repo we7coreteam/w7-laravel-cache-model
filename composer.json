@@ -35,11 +35,5 @@
         "psr-4": {
             "W7\\Laravel\\CacheModel\\Tests\\": "tests/"
         }
-    },
-    "repositories": [
-        {
-            "type" : "vcs",
-            "url" : "https://gitee.com/we7coreteam/w7-laravel-cache-model.git"
-        }
-    ]
+    }
 }
