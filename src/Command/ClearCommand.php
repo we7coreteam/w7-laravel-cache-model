@@ -10,7 +10,7 @@
  * visited https://www.w7.cc for more details
  */
 
-namespace W7\Laravel\CacheModel\Command;
+namespace W7\CacheModel\Command;
 
 use Illuminate\Container\Container;
 use Illuminate\Support\Collection;

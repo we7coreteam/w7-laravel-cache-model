@@ -10,7 +10,7 @@
  * visited https://www.w7.cc for more details
  */
 
-namespace W7\Laravel\CacheModel\Store;
+namespace W7\CacheModel\Store;
 
 use Illuminate\Cache\RedisTaggedCache;
 use Illuminate\Cache\TaggableStore;

@@ -10,13 +10,13 @@
  * visited https://www.w7.cc for more details
  */
 
-namespace W7\Laravel\CacheModel;
+namespace W7\CacheModel;
 
 use Illuminate\Cache\CacheManager;
 use Illuminate\Container\Container;
 use W7\Core\Provider\ProviderAbstract;
 use Illuminate\Config\Repository;
-use W7\Laravel\CacheModel\Store\CacheStore;
+use W7\CacheModel\Store\CacheStore;
 
 class CacheModelProvider extends ProviderAbstract {
 	public function register() {
