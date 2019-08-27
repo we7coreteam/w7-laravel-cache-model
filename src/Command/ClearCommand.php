@@ -16,6 +16,7 @@ use Illuminate\Container\Container;
 use Illuminate\Support\Collection;
 use Symfony\Component\Console\Input\InputOption;
 use W7\Console\Command\CommandAbstract;
+use W7\Core\Exception\CommandException;
 
 class ClearCommand extends CommandAbstract {
 	protected $description = 'Flush cache for a given model. If no model is given, entire model-cache is flushed.';
@@ -28,8 +29,12 @@ class ClearCommand extends CommandAbstract {
 		$option = $options['model'];
 
 		go(function () use ($option) {
-			if (! $option) {
-				return $this->flushEntireCache();
+			if (!$option) {
+				if ($this->output->confirm('clear all model cache?')) {
+					return $this->flushEntireCache();
+				}
+				$this->output->error("option model Can't be empty");
+				return false;
 			}
 
 			return $this->flushModelCache($option);
