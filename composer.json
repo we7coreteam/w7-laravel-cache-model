@@ -1,5 +1,5 @@
 {
-    "name": "w7/laravel-cache-model",
+    "name": "w7/rangine-cache-model",
     "description": "对Laravel框架的Model扩展缓存支持",
     "type": "library",
     "license": "Apache-2.0",
@@ -20,18 +20,18 @@
     },
     "autoload": {
         "psr-4": {
-            "W7\\Laravel\\CacheModel\\": "src/"
+            "W7\\CacheModel\\": "src/"
         }
     },
 	"autoload-dev": {
         "psr-4": {
-            "W7\\Laravel\\CacheModel\\Tests\\": "tests/"
+            "W7\\CacheModel\\Tests\\": "tests/"
         }
     },
     "extra": {
         "rangine": {
             "providers": [
-                "W7\\Laravel\\CacheModel\\CacheModelProvider"
+                "W7\\CacheModel\\CacheModelProvider"
             ]
         }
     }
