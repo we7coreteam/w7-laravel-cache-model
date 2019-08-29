@@ -1,5 +1,5 @@
 {
-    "name": "w7/laravel-cache-model",
+    "name": "w7/rangine-cache-model",
     "description": "对Laravel框架的Model扩展缓存支持",
     "type": "library",
     "license": "Apache-2.0",
