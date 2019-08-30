@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Rangine Model Cache
+ * WeEngine Api System
  *
  * (c) We7Team 2019 <https://www.w7.cc>
  *
@@ -14,6 +14,9 @@ namespace W7\CacheModel;
 
 use Illuminate\Cache\CacheManager;
 use Illuminate\Container\Container;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Events\TransactionCommitted;
+use Illuminate\Database\Events\TransactionRolledBack;
 use W7\Core\Provider\ProviderAbstract;
 use Illuminate\Config\Repository;
 use W7\CacheModel\Store\CacheStore;
@@ -51,6 +54,31 @@ class CacheModelProvider extends ProviderAbstract {
 					$config['channel']
 				)
 			);
+		});
+
+		//放在boot的原因是在boot执行的时候,数据库需要的条件才会准备好
+		$this->registerListener();
+	}
+
+	private function registerListener() {
+		//处理在事物中使用缓存问题
+		Model::getEventDispatcher()->listen(TransactionCommitted::class, function (Model $instance) {
+			if ($instance->getConnection()->transactionLevel() !== 0) {
+				return false;
+			}
+
+			$callbacks = $instance->transCallback;
+			$instance->transCallback = [];
+			foreach ($callbacks as $callback) {
+				$callback();
+			}
+		});
+		Model::getEventDispatcher()->listen(TransactionRolledBack::class, function (Model $instance) {
+			if ($instance->getConnection()->transactionLevel() !== 0) {
+				return false;
+			}
+
+			$instance->transCallback = [];
 		});
 	}
 }
