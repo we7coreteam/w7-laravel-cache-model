@@ -62,23 +62,22 @@ class CacheModelProvider extends ProviderAbstract {
 
 	private function registerListener() {
 		//处理在事物中使用缓存问题
-		Model::getEventDispatcher()->listen(TransactionCommitted::class, function (Model $instance) {
-			if ($instance->getConnection()->transactionLevel() !== 0) {
+		Model::getEventDispatcher()->listen(TransactionCommitted::class, function (TransactionCommitted $instance) {
+			if ($instance->connection->transactionLevel() !== 0) {
 				return false;
 			}
-
-			$callbacks = $instance->transCallback;
-			$instance->transCallback = [];
+			$callbacks = $instance->connection->transCallback;
+			$instance->connection->transCallback = [];
 			foreach ($callbacks as $callback) {
 				$callback();
 			}
 		});
-		Model::getEventDispatcher()->listen(TransactionRolledBack::class, function (Model $instance) {
-			if ($instance->getConnection()->transactionLevel() !== 0) {
+		Model::getEventDispatcher()->listen(TransactionRolledBack::class, function (TransactionRolledBack $instance) {
+			if ($instance->connection->transactionLevel() !== 0) {
 				return false;
 			}
 
-			$instance->transCallback = [];
+			$instance->connection->transCallback = [];
 		});
 	}
 }

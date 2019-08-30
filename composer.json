@@ -21,7 +21,10 @@
     "autoload": {
         "psr-4": {
             "W7\\CacheModel\\": "src/"
-        }
+        },
+        "classmap": [
+            "src/Traits/Buildable.php"
+        ]
     },
 	"autoload-dev": {
         "psr-4": {
