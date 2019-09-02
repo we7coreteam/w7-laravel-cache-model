@@ -68,8 +68,8 @@ class CacheModelProvider extends ProviderAbstract {
 			}
 			$callbacks = $instance->connection->transCallback;
 			$instance->connection->transCallback = [];
-			foreach ($callbacks as $callback) {
-				$callback();
+			foreach ((array)$callbacks as $callback) {
+				is_callable($callback) && $callback();
 			}
 		});
 		Model::getEventDispatcher()->listen(TransactionRolledBack::class, function (TransactionRolledBack $instance) {
