@@ -14,7 +14,6 @@
         "genealabs/laravel-model-caching": "^0.6.2"
     },
     "require-dev": {
-        "symfony/thanks": "^1.0",
         "phpunit/phpunit": "^7.2",
         "w7/php-cs-fixer": "^1.0"
     },
