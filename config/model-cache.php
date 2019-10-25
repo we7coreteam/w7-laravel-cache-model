@@ -13,7 +13,7 @@
 return [
 	'cache-prefix' => '',
 
-	'enabled' => true,
+	'enabled' => false,
 
 	'use-database-keying' => true,
 
