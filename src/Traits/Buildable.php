@@ -243,80 +243,92 @@ trait Buildable {
 	}
 
 	public function delete() {
-		if ($this->getConnection()->transactionLevel() > 0) {
-			$this->getConnection()->transCallback[] = function () {
+		if ($this->isCachable()) {
+			if ($this->getConnection()->transactionLevel() > 0) {
+				$this->getConnection()->transCallback[] = function () {
+					$this->cache($this->makeCacheTags())
+						->flush();
+				};
+			} else {
 				$this->cache($this->makeCacheTags())
 					->flush();
-			};
-		} else {
-			$this->cache($this->makeCacheTags())
-				->flush();
+			}
 		}
 
 		return parent::delete();
 	}
 
 	public function insert(array $values) {
-		if ($this->getConnection()->transactionLevel() > 0) {
-			$this->getConnection()->transCallback[] = function () {
+		if ($this->isCachable()) {
+			if ($this->getConnection()->transactionLevel() > 0) {
+				$this->getConnection()->transCallback[] = function () {
+					$this->checkCooldownAndFlushAfterPersisting($this->model);
+				};
+			} else {
 				$this->checkCooldownAndFlushAfterPersisting($this->model);
-			};
-		} else {
-			$this->checkCooldownAndFlushAfterPersisting($this->model);
+			}
 		}
 
 		return parent::insert($values);
 	}
 
 	public function increment($column, $amount = 1, array $extra = []) {
-		if ($this->getConnection()->transactionLevel() > 0) {
-			$this->getConnection()->transCallback[] = function () {
+		if ($this->isCachable()) {
+			if ($this->getConnection()->transactionLevel() > 0) {
+				$this->getConnection()->transCallback[] = function () {
+					$this->cache($this->makeCacheTags())
+						->flush();
+				};
+			} else {
 				$this->cache($this->makeCacheTags())
 					->flush();
-			};
-		} else {
-			$this->cache($this->makeCacheTags())
-				->flush();
+			}
 		}
 
 		return parent::decrement($column, $amount, $extra);
 	}
 
 	public function decrement($column, $amount = 1, array $extra = []) {
-		if ($this->getConnection()->transactionLevel() > 0) {
-			$this->getConnection()->transCallback[] = function () {
+		if ($this->isCachable()) {
+			if ($this->getConnection()->transactionLevel() > 0) {
+				$this->getConnection()->transCallback[] = function () {
+					$this->cache($this->makeCacheTags())
+						->flush();
+				};
+			} else {
 				$this->cache($this->makeCacheTags())
 					->flush();
-			};
-		} else {
-			$this->cache($this->makeCacheTags())
-				->flush();
+			}
 		}
 
 		return parent::decrement($column, $amount, $extra);
 	}
 
 	public function update(array $values) {
-		if ($this->getConnection()->transactionLevel() > 0) {
-			$this->getConnection()->transCallback[] = function () {
+		if ($this->isCachable()) {
+			if ($this->getConnection()->transactionLevel() > 0) {
+				$this->getConnection()->transCallback[] = function () {
+					$this->checkCooldownAndFlushAfterPersisting($this->model);
+				};
+			} else {
 				$this->checkCooldownAndFlushAfterPersisting($this->model);
-			};
-		} else {
-			$this->checkCooldownAndFlushAfterPersisting($this->model);
+			}
 		}
 
 		return parent::update($values);
 	}
 
 	public function forceDelete() {
-		if ($this->getConnection()->transactionLevel() > 0) {
-			$this->getConnection()->transCallback[] = function () {
+		if ($this->isCachable()) {
+			if ($this->getConnection()->transactionLevel() > 0) {
+				$this->getConnection()->transCallback[] = function () {
+					$this->cache($this->makeCacheTags())
+						->flush();
+				};
+			} else {
 				$this->cache($this->makeCacheTags())
 					->flush();
-			};
-		} else {
-			$this->cache($this->makeCacheTags())
-				->flush();
+			}
 		}
 
 		return parent::forceDelete();
