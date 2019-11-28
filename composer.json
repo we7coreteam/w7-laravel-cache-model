@@ -22,7 +22,8 @@
 			"W7\\CacheModel\\": "src/"
 		},
 		"classmap": [
-			"src/Traits/Buildable.php"
+			"src/Traits/Buildable.php",
+			"src/Traits/Caching.php"
 		]
 	},
 	"autoload-dev": {
