@@ -10,8 +10,7 @@
 		}
 	],
 	"require": {
-		"php": "7.*",
-		"genealabs/laravel-model-caching": "^0.6.2"
+		"genealabs/laravel-model-caching": "^0.8.0"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "^7.2",
@@ -20,11 +19,7 @@
 	"autoload": {
 		"psr-4": {
 			"W7\\CacheModel\\": "src/"
-		},
-		"classmap": [
-			"src/Traits/Buildable.php",
-			"src/Traits/Caching.php"
-		]
+		}
 	},
 	"autoload-dev": {
 		"psr-4": {
