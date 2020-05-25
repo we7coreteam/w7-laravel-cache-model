@@ -28,7 +28,7 @@ class CacheModelProvider extends ProviderAbstract {
 		$this->registerCommand('model:cache');
 
 		Container::getInstance()->singleton('config', function () {
-			$config = $this->getConfigger()->getUserConfig('model-cache');
+			$config = $this->config->getUserConfig('model-cache');
 			$config['store'] = 'icache';
 
 			return new Repository([
@@ -46,7 +46,7 @@ class CacheModelProvider extends ProviderAbstract {
 	}
 
 	public function boot() {
-		$config = $this->getConfigger()->getUserConfig('model-cache');
+		$config = $this->config->getUserConfig('model-cache');
 		Container::getInstance()->make('cache')->extend('icache', function ($app) use ($config) {
 			return Container::getInstance()->make('cache')->repository(
 				new CacheStore(
