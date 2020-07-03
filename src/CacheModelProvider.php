@@ -14,9 +14,10 @@ namespace W7\CacheModel;
 
 use Illuminate\Cache\CacheManager;
 use Illuminate\Container\Container;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Events\TransactionCommitted;
 use Illuminate\Database\Events\TransactionRolledBack;
+use W7\Core\Facades\DB;
+use W7\Core\Facades\Event;
 use W7\Core\Provider\ProviderAbstract;
 use Illuminate\Config\Repository;
 use W7\CacheModel\Store\CacheStore;
@@ -38,7 +39,7 @@ class CacheModelProvider extends ProviderAbstract {
 			]]);
 		});
 		Container::getInstance()->singleton('db', function () {
-			return idb();
+			return DB::getFacadeRoot();
 		});
 		Container::getInstance()->singleton('cache', function ($app) {
 			return new CacheManager($app);
@@ -62,7 +63,7 @@ class CacheModelProvider extends ProviderAbstract {
 
 	private function registerListener() {
 		//处理在事物中使用缓存问题
-		Model::getEventDispatcher()->listen(TransactionCommitted::class, function (TransactionCommitted $instance) {
+		Event::listen(TransactionCommitted::class, function (TransactionCommitted $instance) {
 			if ($instance->connection->transactionLevel() !== 0 || empty($instance->connection->transCallback)) {
 				return false;
 			}
@@ -72,7 +73,7 @@ class CacheModelProvider extends ProviderAbstract {
 				is_callable($callback) && $callback();
 			}
 		});
-		Model::getEventDispatcher()->listen(TransactionRolledBack::class, function (TransactionRolledBack $instance) {
+		Event::listen(TransactionRolledBack::class, function (TransactionRolledBack $instance) {
 			if ($instance->connection->transactionLevel() !== 0) {
 				return false;
 			}
