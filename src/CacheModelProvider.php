@@ -26,7 +26,7 @@ class CacheModelProvider extends ProviderAbstract {
 	public function register() {
 		$this->publishConfig('model-cache.php');
 		$this->registerConfig('model-cache.php', 'model-cache');
-		$this->registerCommand('model:cache');
+		$this->registerCommand();
 
 		Container::getInstance()->singleton('config', function () {
 			$config = $this->config->get('model-cache');
