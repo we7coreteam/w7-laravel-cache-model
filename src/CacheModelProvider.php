@@ -1,13 +1,13 @@
 <?php
 
 /**
- * Rangine Model Cache
+ * Rangine model cache
  *
- * (c) We7Team 2019 <https://www.rangine.com/>
+ * (c) We7Team 2019 <https://www.rangine.com>
  *
  * document http://s.w7.cc/index.php?c=wiki&do=view&id=317&list=2284
  *
- * visited https://www.rangine.com/ for more details
+ * visited https://www.rangine.com for more details
  */
 
 namespace W7\CacheModel;
@@ -28,7 +28,7 @@ class CacheModelProvider extends ProviderAbstract {
 		$this->registerCommand('model:cache');
 
 		Container::getInstance()->singleton('config', function () {
-			$config = $this->config->getUserConfig('model-cache');
+			$config = $this->config->get('model-cache', []);
 			$config['store'] = 'icache';
 
 			return new Repository([
@@ -38,7 +38,7 @@ class CacheModelProvider extends ProviderAbstract {
 			]]);
 		});
 		Container::getInstance()->singleton('db', function () {
-			return idb();
+			return $this->getContainer()->singleton('db-factory');
 		});
 		Container::getInstance()->singleton('cache', function ($app) {
 			return new CacheManager($app);
@@ -46,7 +46,7 @@ class CacheModelProvider extends ProviderAbstract {
 	}
 
 	public function boot() {
-		$config = $this->config->getUserConfig('model-cache');
+		$config = $this->config->get('model-cache', []);
 		Container::getInstance()->make('cache')->extend('icache', function ($app) use ($config) {
 			return Container::getInstance()->make('cache')->repository(
 				new CacheStore(

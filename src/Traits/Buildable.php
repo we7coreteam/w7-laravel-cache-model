@@ -1,18 +1,18 @@
 <?php
 
 /**
- * Rangine Model Cache
+ * Rangine model cache
  *
- * (c) We7Team 2019 <https://www.rangine.com/>
+ * (c) We7Team 2019 <https://www.rangine.com>
  *
  * document http://s.w7.cc/index.php?c=wiki&do=view&id=317&list=2284
  *
- * visited https://www.rangine.com/ for more details
+ * visited https://www.rangine.com for more details
  */
 
 namespace GeneaLabs\LaravelModelCaching\Traits;
 
-use Illuminate\Container\Container;
+use Illuminate\Pagination\Paginator;
 
 trait Buildable {
 	public function avg($column) {
@@ -112,11 +112,7 @@ trait Buildable {
 			return parent::paginate($perPage, $columns, $pageName, $page);
 		}
 
-		$page = Container::getInstance()
-			->make('request')
-			->input($pageName)
-			?: $page
-				?: 1;
+		$page = $page ?: Paginator::resolveCurrentPage($pageName);
 
 		if (is_array($page)) {
 			$page = $this->recursiveImplodeWithKey($page);
@@ -243,13 +239,18 @@ trait Buildable {
 	}
 
 	public function delete() {
+		if (! $this->isCachable()) {
+			return parent::delete();
+		}
+
+		$cacheTags = $this->makeCacheTags();
 		if ($this->getConnection()->transactionLevel() > 0) {
-			$this->getConnection()->transCallback[] = function () {
-				$this->cache($this->makeCacheTags())
+			$this->getConnection()->transCallback[] = function () use ($cacheTags) {
+				$this->cache($cacheTags)
 					->flush();
 			};
 		} else {
-			$this->cache($this->makeCacheTags())
+			$this->cache($cacheTags)
 				->flush();
 		}
 
@@ -257,39 +258,57 @@ trait Buildable {
 	}
 
 	public function insert(array $values) {
+		if (! $this->isCachable()) {
+			return parent::insert($values);
+		}
+
 		if ($this->getConnection()->transactionLevel() > 0) {
 			$this->getConnection()->transCallback[] = function () {
-				$this->checkCooldownAndFlushAfterPersisting($this->model);
+				if (property_exists($this, 'model')) {
+					$this->checkCooldownAndFlushAfterPersisting($this->model);
+				}
 			};
 		} else {
-			$this->checkCooldownAndFlushAfterPersisting($this->model);
+			if (property_exists($this, 'model')) {
+				$this->checkCooldownAndFlushAfterPersisting($this->model);
+			}
 		}
 
 		return parent::insert($values);
 	}
 
 	public function increment($column, $amount = 1, array $extra = []) {
+		if (!$this->isCachable()) {
+			return parent::increment($column, $amount, $extra);
+		}
+
+		$cacheTags = $this->makeCacheTags();
 		if ($this->getConnection()->transactionLevel() > 0) {
-			$this->getConnection()->transCallback[] = function () {
-				$this->cache($this->makeCacheTags())
+			$this->getConnection()->transCallback[] = function () use ($cacheTags) {
+				$this->cache($cacheTags)
 					->flush();
 			};
 		} else {
-			$this->cache($this->makeCacheTags())
+			$this->cache($cacheTags)
 				->flush();
 		}
 
-		return parent::decrement($column, $amount, $extra);
+		return parent::increment($column, $amount, $extra);
 	}
 
 	public function decrement($column, $amount = 1, array $extra = []) {
+		if (! $this->isCachable()) {
+			return parent::decrement($column, $amount, $extra);
+		}
+
+		$cacheTags = $this->makeCacheTags();
 		if ($this->getConnection()->transactionLevel() > 0) {
-			$this->getConnection()->transCallback[] = function () {
-				$this->cache($this->makeCacheTags())
+			$this->getConnection()->transCallback[] = function () use ($cacheTags) {
+				$this->cache($cacheTags)
 					->flush();
 			};
 		} else {
-			$this->cache($this->makeCacheTags())
+			$this->cache($cacheTags)
 				->flush();
 		}
 
@@ -297,25 +316,38 @@ trait Buildable {
 	}
 
 	public function update(array $values) {
+		if (! $this->isCachable()) {
+			return parent::update($values);
+		}
+
 		if ($this->getConnection()->transactionLevel() > 0) {
 			$this->getConnection()->transCallback[] = function () {
-				$this->checkCooldownAndFlushAfterPersisting($this->model);
+				if (property_exists($this, 'model')) {
+					$this->checkCooldownAndFlushAfterPersisting($this->model);
+				}
 			};
 		} else {
-			$this->checkCooldownAndFlushAfterPersisting($this->model);
+			if (property_exists($this, 'model')) {
+				$this->checkCooldownAndFlushAfterPersisting($this->model);
+			}
 		}
 
 		return parent::update($values);
 	}
 
 	public function forceDelete() {
+		if (! $this->isCachable()) {
+			return parent::forceDelete();
+		}
+		
+		$cacheTags = $this->makeCacheTags();
 		if ($this->getConnection()->transactionLevel() > 0) {
-			$this->getConnection()->transCallback[] = function () {
-				$this->cache($this->makeCacheTags())
+			$this->getConnection()->transCallback[] = function () use ($cacheTags) {
+				$this->cache($cacheTags)
 					->flush();
 			};
 		} else {
-			$this->cache($this->makeCacheTags())
+			$this->cache($cacheTags)
 				->flush();
 		}
 
