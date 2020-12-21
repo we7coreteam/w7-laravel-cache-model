@@ -70,9 +70,10 @@ class CacheModelProvider extends ProviderAbstract {
 	private function registerListener() {
 		//处理在事物中使用缓存问题
 		Model::getEventDispatcher()->listen(TransactionCommitted::class, function (TransactionCommitted $instance) {
-			if ($instance->connection->transactionLevel() !== 0) {
+			if ($instance->connection->transactionLevel() !== 0 || empty($instance->connection->transCallback)) {
 				return false;
 			}
+
 			$callbacks = $instance->connection->transCallback;
 			$instance->connection->transCallback = [];
 			foreach ((array)$callbacks as $callback) {
