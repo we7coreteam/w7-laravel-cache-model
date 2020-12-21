@@ -17,15 +17,25 @@ use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Events\TransactionCommitted;
 use Illuminate\Database\Events\TransactionRolledBack;
+use W7\Contract\Cache\CacheFactoryInterface;
 use W7\Core\Provider\ProviderAbstract;
 use Illuminate\Config\Repository;
-use W7\CacheModel\Store\CacheStore;
+use W7\CacheModel\Store\RedisStore;
 
 class CacheModelProvider extends ProviderAbstract {
 	public function register() {
 		$this->publishConfig('model-cache.php');
 		$this->registerConfig('model-cache.php', 'model-cache');
-		$this->registerCommand('model:cache');
+		$this->registerCommand();
+
+		$this->container->set('model-cache-store', function () {
+			$config = $this->config->get('model-cache', []);
+			return new RedisStore(
+				$this->container->singleton(CacheFactoryInterface::class),
+				$config['cache-prefix'],
+				$config['channel']
+			);
+		});
 
 		Container::getInstance()->singleton('config', function () {
 			$config = $this->config->get('model-cache', []);
@@ -46,13 +56,10 @@ class CacheModelProvider extends ProviderAbstract {
 	}
 
 	public function boot() {
-		$config = $this->config->get('model-cache', []);
-		Container::getInstance()->make('cache')->extend('icache', function ($app) use ($config) {
+		$container = $this->container;
+		Container::getInstance()->make('cache')->extend('icache', function ($app) use ($container) {
 			return Container::getInstance()->make('cache')->repository(
-				new CacheStore(
-					$config['cache-prefix'],
-					$config['channel']
-				)
+				$container->singleton('model-cache-store')
 			);
 		});
 

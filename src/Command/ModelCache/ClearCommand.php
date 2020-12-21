@@ -10,7 +10,7 @@
  * visited https://www.rangine.com/ for more details
  */
 
-namespace W7\CacheModel\Command;
+namespace W7\CacheModel\Command\ModelCache;
 
 use Illuminate\Container\Container;
 use Illuminate\Support\Collection;
@@ -27,17 +27,15 @@ class ClearCommand extends CommandAbstract {
 	protected function handle($options) {
 		$option = $options['model'];
 
-		go(function () use ($option) {
-			if (!$option) {
-				if ($this->output->confirm('clear all model cache?')) {
-					return $this->flushEntireCache();
-				}
-				$this->output->error("option model Can't be empty");
-				return false;
+		if (!$option) {
+			if ($this->output->confirm('clear all model cache?')) {
+				return $this->flushEntireCache();
 			}
+			$this->output->error("option model Can't be empty");
+			return false;
+		}
 
-			return $this->flushModelCache($option);
-		});
+		return $this->flushModelCache($option);
 	}
 
 	protected function flushEntireCache() : int {
