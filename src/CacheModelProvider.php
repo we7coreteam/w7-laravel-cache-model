@@ -19,7 +19,6 @@ use Illuminate\Database\Events\TransactionCommitted;
 use Illuminate\Database\Events\TransactionRolledBack;
 use W7\Contract\Cache\CacheFactoryInterface;
 use W7\Core\Provider\ProviderAbstract;
-use Illuminate\Config\Repository;
 use W7\CacheModel\Store\RedisStore;
 
 class CacheModelProvider extends ProviderAbstract {
@@ -31,26 +30,19 @@ class CacheModelProvider extends ProviderAbstract {
 		$this->container->set('model-cache-store', function () {
 			$config = $this->config->get('model-cache', []);
 			return new RedisStore(
-				$this->container->singleton(CacheFactoryInterface::class),
+				$this->container->get(CacheFactoryInterface::class),
 				$config['cache-prefix'],
 				$config['channel']
 			);
 		});
 
-		Container::getInstance()->singleton('config', function () {
-			$config = $this->config->get('model-cache', []);
-			$config['store'] = 'icache';
+		$container = Container::getInstance();
+		$config = $this->config->get('model-cache', []);
+		$config['store'] = 'icache';
+		$container['config']['laravel-model-caching'] = $config;
+		$container['config']['cache.stores.icache.driver'] = 'icache';
 
-			return new Repository([
-			'laravel-model-caching' => $config,
-			'cache.stores.icache' => [
-				'driver' => 'icache'
-			]]);
-		});
-		Container::getInstance()->singleton('db', function () {
-			return $this->getContainer()->singleton('db-factory');
-		});
-		Container::getInstance()->singleton('cache', function ($app) {
+		$container->singleton('cache', function ($app) {
 			return new CacheManager($app);
 		});
 	}
@@ -59,7 +51,7 @@ class CacheModelProvider extends ProviderAbstract {
 		$container = $this->container;
 		Container::getInstance()->make('cache')->extend('icache', function ($app) use ($container) {
 			return Container::getInstance()->make('cache')->repository(
-				$container->singleton('model-cache-store')
+				$container->get('model-cache-store')
 			);
 		});
 
