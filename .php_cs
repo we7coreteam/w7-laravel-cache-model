@@ -17,7 +17,7 @@
  */
 
 
-define('SOFT_NAME', 'Rangine model cache');
+define('SOFT_NAME', 'Rangine Model Cache');
 
 $finder = PhpCsFixer\Finder::create()
 	->files()
@@ -43,7 +43,7 @@ $fixers = array(
 	'indentation_type'                           => true,
 	'header_comment' => [
 	    'comment_type' => 'PHPDoc',
-	    'header' => SOFT_NAME . " \r\n\r\n(c) We7Team 2019 <https://www.rangine.com> \r\n\r\ndocument http://s.w7.cc/index.php?c=wiki&do=view&id=317&list=2284\r\n\r\nvisited https://www.rangine.com for more details",
+	    'header' => SOFT_NAME . " \r\n\r\n(c) We7Team 2019 <https://www.rangine.com/> \r\n\r\ndocument http://s.w7.cc/index.php?c=wiki&do=view&id=317&list=2284\r\n\r\nvisited https://www.rangine.com/ for more details",
 	],
 	'braces'                                     => ['position_after_functions_and_oop_constructs' => 'same'], //设置大括号换行，暂时根本Psr
 	//'binary_operator_spaces'                   => ['default' => 'align_single_space'], //等号对齐、数字箭头符号对齐
