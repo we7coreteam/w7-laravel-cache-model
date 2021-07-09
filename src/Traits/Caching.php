@@ -46,7 +46,7 @@ trait Caching {
 		if ($this->scopesAreApplied) {
 			return $this;
 		}
-		
+
 		return parent::applyScopes();
 	}
 
@@ -121,7 +121,7 @@ trait Caching {
 
 			$this->cache()
 				->rememberForever($cacheKey, function () {
-					return (new Carbon)->now();
+					return Carbon::now();
 				});
 		}
 	}
@@ -166,7 +166,7 @@ trait Caching {
 			?? Container::getInstance()
 				->make('db')
 				->query();
-		
+
 		if ($this->query
 			&& method_exists($this->query, 'getQuery')
 		) {
@@ -187,10 +187,8 @@ trait Caching {
 			: Container::getInstance()
 				->make('db')
 				->query();
-		$tags = (new CacheTags($eagerLoad, $model, $query))
+		return (new CacheTags($eagerLoad, $model, $query))
 			->make();
-
-		return $tags;
 	}
 
 	public function getModelCacheCooldown(Model $instance) : array {
@@ -236,7 +234,7 @@ trait Caching {
 		[$cacheCooldown, $invalidatedAt] = $this->getModelCacheCooldown($instance);
 
 		if (! $cacheCooldown
-			|| (new Carbon)->now()->diffInSeconds($invalidatedAt) < $cacheCooldown
+			|| Carbon::now()->diffInSeconds($invalidatedAt) < $cacheCooldown
 		) {
 			return;
 		}
@@ -275,7 +273,7 @@ trait Caching {
 
 		$this->setCacheCooldownSavedAtTimestamp($instance);
 
-		if ((new Carbon)->now()->diffInSeconds($invalidatedAt) >= $cacheCooldown) {
+		if (Carbon::now()->diffInSeconds($invalidatedAt) >= $cacheCooldown) {
 			$instance->flushCache();
 
 			if ($relationship) {
@@ -294,25 +292,25 @@ trait Caching {
 			&& $this->eagerLoad
 		) {
 			$allRelationshipsAreCachable = collect($this
-				->eagerLoad)
-				->keys()
-				->reduce(function ($carry, $related) {
-					if (! method_exists($this, $related)
-						|| $carry === false
-					) {
-						return $carry;
-					}
-		
-					$relatedModel = $this->model->$related()->getRelated();
+					->eagerLoad)
+					->keys()
+					->reduce(function ($carry, $related) {
+						if (! method_exists($this, $related)
+							|| $carry === false
+						) {
+							return $carry;
+						}
 
-					if (! method_exists($relatedModel, 'isCachable')
-						|| ! $relatedModel->isCachable()
-					) {
-						return false;
-					}
+						$relatedModel = $this->model->$related()->getRelated();
 
-					return true;
-				})
+						if (! method_exists($relatedModel, 'isCachable')
+							|| ! $relatedModel->isCachable()
+						) {
+							return false;
+						}
+
+						return true;
+					})
 				?? true;
 		}
 
@@ -328,7 +326,7 @@ trait Caching {
 
 		$instance->cache()
 			->rememberForever($cacheKey, function () {
-				return (new Carbon)->now();
+				return Carbon::now();
 			});
 	}
 }
